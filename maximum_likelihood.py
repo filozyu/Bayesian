@@ -39,6 +39,71 @@ def ml_gaussian(x):
     return mu.reshape(-1, 1), sigma
 
 
+def ml_linear_regression(x, y, bias=False):
+    """
+    :param x: (N, D)
+    :param y: (N, 1)
+    :param bias: bool
+    :return: maximum likelihood estimate of weight (and bias in the last row, if bias is True)
+    """
+    if bias:
+        # last row of w is bias
+        x = np.c_[x, np.ones(x.shape[0]).reshape(-1, 1)]
+    # w = (x.T * x)^(-1) * x.T * y
+    try:
+        w = np.matmul(
+            np.matmul(np.linalg.inv(np.matmul(x.transpose(), x)), x.transpose()), y
+        )
+    # TODO: revise this except
+    except:
+        raise Exception("Singular matrix, likely to happen if N > D")
+
+    return w
+
+
+def linear_regression(x, weight, bias=0, noise=True):
+    """
+    Compute y from given x, w and b, with optional Gaussian noise
+    :param x: (N, D)
+    :param weight: (D, 1)
+    :param bias: int
+    :param noise: bool
+    :return: y = xw + b (+ epsilon)
+    """
+    if bias != 0:
+        x = np.c_[x, np.ones(x.shape[0]).reshape(-1, 1)]
+        weight = np.r_[weight, bias * np.ones(weight.shape[1]).reshape(1, -1)]
+    y = np.matmul(x, weight)
+    if noise:
+        # TODO: allow customise mean and cov
+        return y + np.random.standard_normal(y.shape)
+    else:
+        return np.matmul(x, weight)
+
+
+# TODO: Format the plotting functions properly
+
+# num_pt = 100
+# x_orig = np.random.uniform(low=0.0, high=50.0, size=(num_pt,1))
+# w_orig = np.array([2]).reshape(-1,1)
+# b_orig = -12
+# y_orig = linear_regression(x_orig, w_orig, b_orig)
+# w_ml = ml_linear_regression(x_orig, y_orig, True)
+# b_ml = w_ml[-1].item()
+# w_ml = w_ml[:-1]
+#
+# y_pred = linear_regression(x_orig, w_ml, b_ml, noise=False)
+#
+# print(w_ml, b_ml)
+#
+# plt.scatter(x_orig, y_orig,  color='k')
+# plt.plot(x_orig, y_pred, color='b', linewidth=1)
+# plt.xticks(())
+# plt.yticks(())
+#
+# plt.show()
+
+
 mean_orig = np.array([0, 0])
 cov_orig = np.eye(2)
 n_sample = 10000
